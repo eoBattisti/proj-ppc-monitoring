@@ -1,3 +1,4 @@
+import os
 import sqlite3
 
 from singleton import Singleton
@@ -101,19 +102,6 @@ class Database(metaclass=Singleton):
             else:
                 return None
 
-    def __normalize_create_query_string(self, table_name: str, col) -> str:
-        """ Normalize a create query string to match the database
-        the exact number of columns that must be inserted.
-
-        Args:
-            table_name (str)
-
-
-        Returns:
-            str: SQL Query
-        """
-        pass
-    
     def __normalize_insert_query_string(self, table: str, query: str) -> str:
         """ Normalize a insert query string to match the database
         the exact number of columns that must be inserted.
@@ -140,34 +128,25 @@ class Database(metaclass=Singleton):
     def get_connection(self):
         """Return a database connection."""
         return self.__connect()
-    
-    def drop_table(self, table_name: str):
-        """
-        Try to drop a table from the database.
-        """
-        cursor = self.connection.cursor()
-        try:
-            query = f"DROP TABLE IF EXISTS {table_name}"
-            cursor.execute(query)
-        except sqlite3.Error as error:
-            print(f'Error while droping table: {error}')
-        finally:
-            cursor.close()
 
-    def create_disk_table(self):
+    def import_tables(self, file: str):
+        """ Import and execute a given sql into the database.
+        This method is used to init all the tables.
+
+        Args:
+            file (str): filepath
+        """               
         cursor = self.connection.cursor()
         try:
-            query = """CREATE TABLE IF NOT EXISTS disk (
-                                total_disk REAL,
-                                total_used REAL,
-                                total_free REAL,
-                                percent REAL,
-                                created_at DATETIME DEFAULT CURRENT_TIMESTAMP);"""
-            cursor.execute(query)
+            if not os.path.exists(file):
+                raise FileNotFoundError
+            sql_file = open(file, 'r')
+            query = sql_file.read()
+            cursor.executescript(query)
         except sqlite3.Error as error:
-            print(f'Error while creating a table: {error}')
-        finally:
-            cursor.close()
+            print(f'Error while importing tables: {error}')
+        except FileNotFoundError:
+            print(f'The given database file to import does not exist!')
 
     def insert_data(self, table: str, data: tuple):
         """Try to insert the given data into the given table. 
@@ -191,8 +170,8 @@ class Database(metaclass=Singleton):
 
 
 if __name__ == "__main__":
-    db = Database('test.db')
-    db.create_disk_table()
+    db = Database('test.sqlite')
+    db.import_tables('./sqlite/script/database.sql')
     print(db.changes)
     print(db.total_changes)
     db.drop_table('test.db')
