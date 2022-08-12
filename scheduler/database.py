@@ -119,6 +119,7 @@ class Database(metaclass=Singleton):
             values += ",".join("? ")
         values = " (" + values + ")"
         query = query + values
+        query = query.rsplit(',', 1)[0] + ")"
         return query
 
     def close_connection(self):
