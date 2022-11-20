@@ -1,0 +1,63 @@
+version: '3.7'
+
+services:
+  python:
+    container_name: scheduler
+    restart: always
+    env_file:
+      - ./envs/elasticsearch.env
+    build:
+      context: ./scheduler
+    networks:
+      - scheduler
+    depends_on:
+      - elasticsearch
+      - kibana
+      - grafana
+
+  elasticsearch:
+    image: elasticsearch:7.14.1
+    hostname: elasticsearch
+    container_name: scheduler_elasticsearch
+    restart: always
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data/
+    ports:
+      - "9200:9200"
+    networks:
+      - scheduler
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.14.1
+    hostname: kibana
+    container_name: scheduler_kibana
+    restart: always
+    ports:
+      - "5601:5601"
+    networks:
+      - scheduler
+    depends_on:
+      - elasticsearch
+
+  grafana:
+    image: grafana/grafana:8.2.0
+    hostname: grafana
+    container_name: scheduler_grafana
+    volumes:
+      - grafana:/var/lib/grafana
+      - ./grafana/dashboards/:/etc/grafana/provisioning/dashboards/
+    networks:
+      - scheduler
+    depends_on:
+      - elasticsearch
+    environment:
+      - GF_INSTALL_PLUGINS=agenty-flowcharting-panel
+
+volumes:
+  elasticsearch:
+  grafana:
+
+
+networks:
+  scheduler:
+    name: scheduler
