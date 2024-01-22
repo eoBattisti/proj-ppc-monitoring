@@ -1,63 +1,65 @@
-version: '3.7'
+version: '3.8'
 
 services:
-  python:
-    container_name: scheduler
-    restart: always
-    env_file:
-      - ./envs/elasticsearch.env
-    build:
-      context: ./scheduler
-    networks:
-      - scheduler
-    depends_on:
-      - elasticsearch
-      - kibana
-      - grafana
 
-  elasticsearch:
-    image: elasticsearch:7.14.1
-    hostname: elasticsearch
-    container_name: scheduler_elasticsearch
-    restart: always
+  pushgateway:
+    image: prom/pushgateway
+    container_name: pushgateway
+    restart: unless-stopped
+    ports:
+      - 9091:9091
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    restart: unless-stopped
     volumes:
-      - elasticsearch:/usr/share/elasticsearch/data/
+      - ./prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    expose:
+      - 9090
     ports:
-      - "9200:9200"
+      - 9090:9090
     networks:
-      - scheduler
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.14.1
-    hostname: kibana
-    container_name: scheduler_kibana
-    restart: always
-    ports:
-      - "5601:5601"
-    networks:
-      - scheduler
+      - monitor-net
     depends_on:
-      - elasticsearch
+      - pushgateway
+    labels:
+      org.label-schema.group: "monitoring"
 
   grafana:
-    image: grafana/grafana:8.2.0
-    hostname: grafana
-    container_name: scheduler_grafana
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
     volumes:
-      - grafana:/var/lib/grafana
-      - ./grafana/dashboards/:/etc/grafana/provisioning/dashboards/
-    networks:
-      - scheduler
+      - grafana_data:/var/lib/grafana
+        - ./grafana/datasources:/etc/grafana/datasources
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    expose:
+      - 3000
+    ports:
+      - 3000:3000
     depends_on:
-      - elasticsearch
-    environment:
-      - GF_INSTALL_PLUGINS=agenty-flowcharting-panel
-
-volumes:
-  elasticsearch:
-  grafana:
-
+      - prometheus
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
 
 networks:
-  scheduler:
-    name: scheduler
+  monitor-net:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:

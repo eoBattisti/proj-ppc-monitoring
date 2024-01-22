@@ -1,0 +1,13 @@
+[Unit]
+Description=A PC Monitoring Service
+After=network.service
+
+[Service]
+Type=simple
+User=battisti
+WorkingDirectory=/home/battisti
+ExecStart=while sleep 1; do ./monitor.sh; done;
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
