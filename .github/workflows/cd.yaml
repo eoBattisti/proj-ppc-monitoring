@@ -18,8 +18,6 @@ jobs:
 
         - name: Installing the service
           shell: bash
-          env:
-
           run: |
             bash ./install.sh
 
