@@ -1,0 +1,25 @@
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+
+    deploy:
+      name: Deploy
+      runs-on: [self-hosted]
+
+      steps:
+
+        - name: Checkout
+          uses: actions/checkout@v3
+
+        - name: Installing the service
+          shell: bash
+          env:
+
+          run: |
+            bash ./install.sh
+
