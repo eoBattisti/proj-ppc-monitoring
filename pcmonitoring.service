@@ -6,7 +6,7 @@ After=network.service
 Type=simple
 User=battisti
 WorkingDirectory=/home/battisti
-ExecStart=while sleep 1; do monitor.sh; done;
+ExecStart=/usr/bin/bash -c 'while sleep 1; do ./monitor.sh; done;'
 Restart=on-failure
 
 [Install]
