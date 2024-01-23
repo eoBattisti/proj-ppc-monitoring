@@ -4,7 +4,7 @@ After=network.service
 
 [Service]
 Type=simple
-User=battisti
+User=ubuntu
 WorkingDirectory=/home/battisti
 ExecStart=/usr/bin/bash -c 'while sleep 1; do ./monitor.sh; done;'
 Restart=on-failure
