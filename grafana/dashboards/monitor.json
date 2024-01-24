@@ -23,10 +23,7 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "f32eca9a-61b0-4e8f-923f-2190ff27c9df"
-      },
+      "datasource": {},
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -113,17 +110,15 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "f32eca9a-61b0-4e8f-923f-2190ff27c9df"
+            "uid": "b7f497bf-7512-4104-96de-56bb4d0caee9"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "exemplar": false,
-          "expr": "avg by(process) (topk(10, cpu_usage))",
+          "expr": "avg by(process) (topk(5, cpu_usage{instance=\"$instance\"}))",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
-          "interval": "",
-          "legendFormat": "{{process}} {{ pid }}",
+          "legendFormat": "{{process}}",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -136,7 +131,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "f32eca9a-61b0-4e8f-923f-2190ff27c9df"
+        "uid": "P1809F7CD0C75ACF3"
       },
       "fieldConfig": {
         "defaults": {
@@ -224,17 +219,16 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "f32eca9a-61b0-4e8f-923f-2190ff27c9df"
+            "uid": "P1809F7CD0C75ACF3"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "exemplar": false,
-          "expr": "avg by(process) (topk(10, mem_usage))",
+          "expr": "avg by(process) (topk(5, mem_usage{instance=\"$instance\"}))",
           "fullMetaSearch": false,
+          "hide": false,
           "includeNullMetadata": true,
           "instant": false,
-          "interval": "",
-          "legendFormat": "{{process}} {{ pid }}",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A",
           "useBackend": false
@@ -249,16 +243,77 @@
   "schemaVersion": 39,
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "aquiles",
+          "value": "aquiles"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "P1809F7CD0C75ACF3"
+        },
+        "definition": "label_values(instance)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "instance",
+        "multi": false,
+        "name": "instance",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(instance)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "P1809F7CD0C75ACF3"
+        },
+        "definition": "label_values({instance=\"$instance\"},process)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Processos",
+        "multi": true,
+        "name": "processes",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values({instance=\"$instance\"},process)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "New dashboard",
+  "title": "Processos",
   "uid": "fca14d49-5a6c-4239-a864-7e97b3e37d43",
-  "version": 8,
+  "version": 2,
   "weekStart": ""
 }

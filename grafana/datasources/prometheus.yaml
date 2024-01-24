@@ -1,0 +1,16 @@
+datasources:
+  - name: prometheus
+    id: 1
+    uid: b7f497bf-7512-4104-96de-56bb4d0caee9
+    type: prometheus
+    url: http://prometheus:9090
+    access: proxy
+    isDefault: true
+    jsonData:
+      httpMethod: POST
+      manageAlerts: true
+      prometheusType: Prometheus
+      prometheusVersion: 2.49.0
+      cacheLevel: 'Low'
+      disableRecordingRules: false
+
