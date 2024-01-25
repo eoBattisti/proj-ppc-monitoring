@@ -1,48 +1,31 @@
 #!/usr/bin/bash
-machine=$(hostname)
 
-z=$(ps aux)
+send_data() {
+  data=$1
+  machine=$(hostname)
+  curl -X POST -H  "Content-Type: text/plain" --fail-with-body  --data-binary "$data
+"  http://localhost:9091/metrics/job/top/instance/$machine
+  if [ $? -ne 0 ]; then
+    echo "Failed to send metrics"
+  fi
+}
 
-while read -r z
-do
-  cpu=$cpu$(awk '{print "cpu_usage{process=\""$11"\", pid=\""$2"\"}", $3z}');
-done <<< "$z"
+data=$(ps aux | awk 'NR>1{
+    print "cpu_usage{process=\""$11"\",pid=\""$2"\"} "$3"\n" \
+          "memory_usage{process=\""$11"\",pid=\""$2"\"} "$4"\n" \
+          "virt_mem{process=\""$11"\",pid=\""$2"\"} "$5"\n" \
+          "res_mem{process=\""$11"\",pid=\""$2"\"} "$6
+}')
 
-z=$(ps aux)
-while read -r z
-do
-  mem=$mem$(awk '{print "mem_usage{process=\""$11"\", pid=\""$2"\"}", $4z}');
-done <<< "$z"
+send_data "$data"
 
-z=$(ps aux)
-while read -r z
-do
-  virt_mem=$virt_mem$(awk '{print "virt_mem{process=\""$11"\", pid=\""$2"\"}", $5z}')
-done <<< "$z"
 
-z=$(ps aux)
-while read -r z
-do
-  res_mem=$res_mem$(awk '{print "res_mem{process=\""$11"\", pid=\""$2"\"}", $6z}')
-done <<< "$z"
 
-z=$(ps aux)
-while read -r z
-do
-  time=$time$(awk '{print "time{process=\""$11"\", pid=\""$2"\"}", $9z}');
-done <<< "$z"
-
-curl -X POST -H  "Content-Type: text/plain" --data-binary "$cpu
-" http://localhost:9091/metrics/job/top/instance/$machine
-
-curl -X POST -H  "Content-Type: text/plain" --data-binary "$mem
-" http://localhost:9091/metrics/job/top/instance/$machine
-
-curl -X POST -H  "Content-Type: text/plain" --data-binary "$virt_mem
-" http://localhost:9091/metrics/job/top/instance/$machine
-
-curl -X POST -H  "Content-Type: text/plain" --data-binary "$res_mem
-" http://localhost:9091/metrics/job/top/instance/$machine
+#curl -X POST -H  "Content-Type: text/plain" --data-binary "$virt_mem
+#" http://localhost:9091/metrics/job/top/instance/$machine
+#
+#curl -X POST -H  "Content-Type: text/plain" --data-binary "$res_mem
+#" http://localhost:9091/metrics/job/top/instance/$machine
 
 #curl -X POST -H  "Content-Type: text/plain" --data-binary "$time
 #" http://localhost:9091/metrics/job/top/instance/$machine
