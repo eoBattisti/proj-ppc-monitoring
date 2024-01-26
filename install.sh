@@ -1,17 +1,18 @@
 #!/usr/bin/bash
 
-# Copying the monitoring script
-sudo cp monitor.sh /usr/local/bin/monitor.sh
 
-# Install the service on the machine
-if [ ! -e /etc/systemd/system/prometheus.service ]; then
-  echo "Registering third party service - Process Monitoring Service"
-  sudo cp pcmonitoring.service /etc/systemd/system/
-  sudo systemctl daemon-reload
-  sudo systemctl enable pcmonitoring
-  sudo systemctl start pcmonitoring
+if [ -e /etc/systemd/system/pcmonitoring.service ]; then
+  echo "Stopping third party service - Process Monitoring Service"
+  sudo systemctl stop pcmonitoring
 fi
 
-# reload the daemon
+echo "Registering third party service - Process Monitoring Service"
+sudo cp monitor.sh /usr/local/bin/monitor.sh
+sudo cp pcmonitoring.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable pcmonitoring
+sudo systemctl start pcmonitoring
+
+echo "Reloading systemd daemon"
 sudo systemctl daemon-reload
 
