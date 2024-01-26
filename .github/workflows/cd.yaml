@@ -19,8 +19,8 @@ jobs:
         - name: Reload containers
           shell: bash
           run: |
-            docker compose stop
-            docker compose up -d
+            sudo docker compose stop
+            sudo docker compose up -d
 
         - name: Installing the service
           shell: bash
