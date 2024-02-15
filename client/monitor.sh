@@ -7,6 +7,7 @@ send_data() {
 "  http://localhost:9091/metrics/job/top/instance/$machine
   if [ $? -ne 0 ]; then
     echo "[ERROR][$(date +%Y-%m-%dT%H:%M:%S)]: Failed to send metrics to pushgateway"
+    python3 ./client/producer/main.py --data "$data" --machine "$machine"
     exit 1
   else
     echo "[INFO][$(date +%Y-%m-%dT%H:%M:%S)]: Successfully sent metrics to pushgateway"
@@ -14,7 +15,6 @@ send_data() {
 }
 
 data=$(ps aux | awk 'NR>1{
-
     # Convert mm:ss to total seconds
     split($10, time_parts, ":")
       if (length(time_parts) == 3) {

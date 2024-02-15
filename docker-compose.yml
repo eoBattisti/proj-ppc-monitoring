@@ -18,7 +18,7 @@ services:
     container_name: prometheus
     restart: unless-stopped
     volumes:
-      - ./prometheus/:/etc/prometheus/
+      - ./server/prometheus/:/etc/prometheus/
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
@@ -32,8 +32,6 @@ services:
       - 9090:9090
     networks:
       - monitor-net
-    depends_on:
-      - pushgateway
     labels:
       org.label-schema.group: "monitoring"
 
@@ -43,8 +41,8 @@ services:
     restart: unless-stopped
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana/datasources/:/etc/grafana/provisioning/datasources/
-      - ./grafana/dashboards/:/etc/grafana/provisioning/dashboards/
+      - ./server/grafana/datasources/:/etc/grafana/provisioning/datasources/
+      - ./server/dashboards/:/etc/grafana/provisioning/dashboards/
     expose:
       - 3000
     ports:
@@ -56,6 +54,85 @@ services:
     labels:
       org.label-schema.group: "monitoring"
 
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - 15672:15672
+      - 5672:5672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
+  elasticsearch:
+    image: elasticsearch:7.17.18
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      - ELASTIC_DEFAULT_USER=elastic
+      - ELASTIC_PASSWORD=elastic
+      - network.host=0.0.0.0
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    expose:
+      - 9200
+    ports:
+      - 9200:9200
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data/
+    networks:
+      - monitor-net
+    labels:
+      org.label-schema.group: "monitoring"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.14.1
+    hostname: kibana
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=elastic
+    restart: unless-stopped
+    ports:
+      - "5601:5601"
+    networks:
+      - monitor-net
+    depends_on:
+      - elasticsearch
+
+  consumer:
+    container_name: rabbitmq_consumer
+    build:
+      context: ./server/consumer/
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=admin
+      - RABBITMQ_PASSWORD=admin
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=elastic
+    depends_on:
+      - rabbitmq
+    networks:
+      - monitor-net
+    volumes:
+      - ./server/consumer/:/app
+    labels:
+      org.label-schema.group: "monitoring"
+
 networks:
   monitor-net:
     driver: bridge
@@ -63,3 +140,5 @@ networks:
 volumes:
   prometheus_data:
   grafana_data:
+  rabbitmq_data:
+  elasticsearch:
