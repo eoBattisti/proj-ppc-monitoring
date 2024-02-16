@@ -1,11 +1,17 @@
 import argparse
+import dotenv
 import datetime
-from typing import Any, Dict, List
+import os
+from typing import Dict, List
 
 import orjson
 import pika
 
-RABBITMQ_URL = 'localhost'
+
+settings = dotenv.load_dotenv('./env-sample.env')
+RABBITMQ_URL = os.environ.get('RABBITMQ_URL', 'rabbitmq')
+RABBITMQ_USER = os.environ.get('RABBITMQ_USER', 'admin')
+RABBITMQ_PASSWORD = os.environ.get('RABBITMQ_PASSWORD', 'admin')
 
 def transform_str(data: str, machine: str) -> List[Dict]:
     _data = []
@@ -25,7 +31,12 @@ def transform_str(data: str, machine: str) -> List[Dict]:
     return _data
 
 def main(data: List[Dict]) -> None:
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_URL, credentials=pika.PlainCredentials('admin', 'admin')))
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(
+            host=RABBITMQ_URL,
+            credentials=pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD)
+        )
+    )
     channel = connection.channel()
     channel.queue_declare(queue='sp-monitoring') # 'sp-monitoring' stands for 'server process monitoring'
     channel.basic_publish(exchange='',

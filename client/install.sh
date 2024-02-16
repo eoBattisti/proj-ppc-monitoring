@@ -1,6 +1,5 @@
 #!/usr/bin/bash
 
-
 if [ -e /etc/systemd/system/pcmonitoring.service ]; then
   echo "Stopping third party service - Process Monitoring Service"
   sudo systemctl stop pcmonitoring
