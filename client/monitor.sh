@@ -46,4 +46,8 @@ data=$(ps aux | awk 'NR>1{
           "time{process=\""$11"\",pid=\""$2"\"} "total_seconds""
 }')
 
+# Filters for 0 or 0.0 values into the string
+data=$(grep -vE '[a-z_]*{[^}]+} 0$' <<< "$data")
+data=$(grep -vE '[a-z_]*{[^}]+} 0.0$' <<< "$data")
+
 send_data "$data"
